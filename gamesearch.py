@@ -16,6 +16,12 @@ def searchbestmatch(playertype, query:dict):
 
 def searchbyname(name:str):
     for game in data.gamelst:
-        if game.name == name:
-            return game
+        if game.name.upper() == name.upper():
+            gamename = game.name
+            gameprice = game.price
+            gametags = [key for key, value in game.tags.items() if value == 1]
+            gamedesc = game.description
+            return f"{gamename} | {gameprice} | {gametags} | {gamedesc}"
     return False
+
+print(searchbyname('Black Myth: Wukong'))
