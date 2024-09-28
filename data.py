@@ -10,6 +10,9 @@ class Game:
         self.description = None if not description else description
         self.link = None if not link else link
         self.imgsrc = None if not imgsrc else imgsrc
+
+    def __str__(self) -> str:
+        return f"{self.name}"
         
 df = pd.read_csv('steam_cleaned.csv')
 selected_df = df[['Name','Price','Review_type','Tags','Description']]
