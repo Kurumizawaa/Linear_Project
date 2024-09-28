@@ -2,10 +2,10 @@ import pandas as pd
 from collections import Counter
 
 class Game:
-    def __init__(self, name, playertype, gamegenre, price, description = None, link = None, imgsrc = None):
+    def __init__(self, name, playertype, gametag, price, description = None, link = None, imgsrc = None):
         self.name = name
         self.playertype = playertype
-        self.genre = {i : (1 if i in gamegenre else 0) for i in genre}
+        self.tags = {i : (1 if i in gametag else 0) for i in genre}
         self.price = price
         self.description = None if not description else description
         self.link = None if not link else link
@@ -26,10 +26,17 @@ for tag in sorttag.keys():
         genrelst.append(tag)
 
 genre = {i : 0 for i in genrelst} 
-gamelst = []
 
-print(sorttag)
-print(genre)
+gamelst = []
+for index, game in selected_df.iterrows():
+    gamelst.append(
+        Game(
+            game['Name'],
+            'Single' if 'Singleplayer' in game['Tags'] else 'Multi', 
+            game['Tags'], 
+            game['Price'], 
+            game['Description']
+            ))
 
 
 # Seach by name
