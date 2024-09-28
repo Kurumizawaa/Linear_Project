@@ -13,3 +13,9 @@ def searchbestmatch(playertype, query:dict):
             result[game] = cosinesim
     result = sorted(result.items(), key=lambda kv: kv[1], reverse=True)
     result = dict(list(result.items()[:10]))
+
+def searchbyname(name:str):
+    for game in data.gamelst:
+        if game.name == name:
+            return game
+    return False
