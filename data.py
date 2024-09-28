@@ -19,7 +19,7 @@ countdict = Counter()
 for tags in selected_df['Tags']:
     for tag in tags.split(','):
         countdict[tag.strip()] += 1
-        
+
 countdict['Singleplayer'] = 0
 countdict['Multiplayer'] = 0
 
@@ -29,7 +29,9 @@ for tag in sorttag.keys():
     if tag not in genrelst:
         genrelst.append(tag)
 
-genre = {i : 0 for i in genrelst} 
+print(genrelst)
+
+genre = {i : 0 for i in genrelst}
 
 gamelst = []
 for index, game in selected_df.iterrows():
@@ -41,8 +43,3 @@ for index, game in selected_df.iterrows():
             game['Price'], 
             game['Description']
             ))
-
-
-# Seach by name
-# Search by Genre (Single)
-# Checkbox (Multiple)
