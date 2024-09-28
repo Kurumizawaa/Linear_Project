@@ -19,6 +19,10 @@ countdict = Counter()
 for tags in selected_df['Tags']:
     for tag in tags.split(','):
         countdict[tag.strip()] += 1
+        
+countdict['Singleplayer'] = 0
+countdict['Multiplayer'] = 0
+
 sorttag = dict(countdict.most_common(30))
 genrelst = []
 for tag in sorttag.keys():
