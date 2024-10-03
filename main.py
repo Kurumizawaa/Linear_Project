@@ -1,15 +1,42 @@
+from fastapi import FastAPI, HTTPException
+import uvicorn
+
 import numpy as np
 from numpy.linalg import norm
 
-import data
+import gamedata
+import userdata
 
+app = FastAPI()
+
+currentuser = None
+
+def login(username:str, password:str):
+    for user in userdata.userlst:
+        if user.username == username and user.password == password:
+            currentuser = user
+            return user
+    return "Incorrect username or password"
+
+def register(username:str, passsword:str, passwordconfirm:str):
+    for user in userdata.userlst:
+        if user.name == username:
+            return "Username Taken"
+    if passsword == passwordconfirm:
+        newuser = userdata.User(username,passsword)
+        userdata.userlst.append(newuser)
+        return newuser
+    else:
+        return "Password Doesn't Match"
+    
 def searchbestmatch(playertype, query:dict):
     """Input : playertype(Single | Multi), query(Tags)
        Operation : construct a vector of query then dot product by all game tags vector that pass playertype filter divide by size of query vector dot size of game tags vector
        Output : vector of games (1x10) sorted by cosine similarity score in descending order"""
+    currentuser.searchhistory.append(query)
     result = {}
     searchquery = np.array([query[i] for i in query])
-    for game in data.gamelst:
+    for game in gamedata.gamelst:
         if game.playertype == playertype:
             gamegenre = np.array([game.tags[i] for i in game.tags])
             cosinesim = np.dot(searchquery,gamegenre)/(norm(searchquery)*norm(gamegenre))
@@ -30,52 +57,65 @@ def search_best_match_from_game(game_list):
        Operation : construct matrix from row vector of tags of each input games and matrix from row vector of tags of all games then use each matrix row to perform cosine similarity then average all column to get 1D array then sort the array to get top 10 index then mapping each index to corresponding game object
        Output : vector of games (1x10)"""
     input_tags_matrix = np.array([[value for value in game.tags.values()] for game in game_list])
-    all_game_tags_matrix = np.array([[value for value in game.tags.values()] for game in data.gamelst])
+    all_game_tags_matrix = np.array([[value for value in game.tags.values()] for game in gamedata.gamelst])
     res = matrix_row_cosine_similarity(input_tags_matrix, all_game_tags_matrix)
     res = np.mean(res, axis=0)
     ascending_index = np.argsort(res)
     descending_index = np.flip(ascending_index, axis=0)
-    top10_best_match = [(data.gamelst[index], res[index]) for index in descending_index[:10]]
+    top10_best_match = [(gamedata.gamelst[index], res[index]) for index in descending_index[:10]]
     return top10_best_match
 
 def searchbyname(name:str):
-    for game in data.gamelst:
+    for game in gamedata.gamelst:
         if game.name.upper() == name.upper():
             gamename = game.name
             gameprice = game.price
             player = game.playertype
             gametags = [key for key, value in game.tags.items() if value == 1]
             gamedesc = game.description
+            currentuser.searchhistory.append(game.tags)
             return f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc}"
     return False
 
 def searchbytags(tagname:str):
     result = []
-    for game in data.gamelst:
+    for game in gamedata.gamelst:
         if game.tags[tagname] == 1:
             gamename = game.name
             gameprice = game.price
             player = game.playertype
             gametags = [key for key, value in game.tags.items() if value == 1]
             gamedesc = game.description
+            currentuser.searchhistory.append(game.tags)
             result.append(f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc}")
     return result if result is not None else False
 
+print('----------By Name---------------')
+
 print(searchbyname('Firelight Fantasy: Resistance'))
+
+print('--------------By Tags-------------------')
 
 print('\n'.join(searchbytags('RPG')))
 
-genrequery = {i : 0 for i in data.genrelst}
+genrequery = {i : 0 for i in gamedata.genrelst}
 
 # Manual input
-# for genre in data.genrelst:
+# for genre in gamedata.genrelst:
 #     genrequery[genre] = input(f'{genre} : ')
 
 # Auto input : Targeted 'Black Myth: Wukong'
 inp = [1,1,0,1,0,1,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,1,0,0,1,0,1,1]
 i = 0
-for genre in data.genrelst:
+for genre in gamedata.genrelst:
     genrequery[genre] = inp[i]
     i += 1
 
-print(searchbestmatch('Multi',genrequery))
+print('-----------------By Genre----------------')
+
+print(searchbestmatch('Single',genrequery))
+
+print('----------------By history-----------------')
+
+print(searchbestmatch('Multi',currentuser.getsearchavg()))
+print(searchbestmatch('Single',currentuser.getsearchavg()))

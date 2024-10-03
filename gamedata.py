@@ -32,7 +32,7 @@ for tag in sorttag.keys():
     if tag not in genrelst:
         genrelst.append(tag)
 
-print(genrelst)
+# print(genrelst)
 
 genre = {i : 0 for i in genrelst}
 
