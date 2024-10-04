@@ -1,9 +1,15 @@
+# Website Host
 from fastapi import FastAPI, HTTPException
 import uvicorn
 
+# Vector/Matrix Stuff
 import numpy as np
 from numpy.linalg import norm
 
+# for String comparison
+from fuzzywuzzy import fuzz
+
+# Database
 import gamedata
 import userdata
 
@@ -11,7 +17,7 @@ app = FastAPI()
 
 currentuser = None
 currentuser = userdata.penis
-
+    
 def login(username:str, password:str):
     for user in userdata.userlst:
         if user.username == username and user.password == password:
@@ -30,11 +36,16 @@ def register(username:str, passsword:str, passwordconfirm:str):
     else:
         return "Password Doesn't Match"
     
+def logout():
+    currentuser = None
+    return
+    
 def searchbestmatch(playertype, query:dict):
     """Input : playertype(Single | Multi), query(Tags)
        Operation : construct a vector of query then dot product by all game tags vector that pass playertype filter divide by size of query vector dot size of game tags vector
        Output : vector of games (1x10) sorted by cosine similarity score in descending order"""
-    currentuser.addhistory(query)
+    if currentuser:
+        currentuser.addhistory(query)
     result = {}
     searchquery = np.array([query[i] for i in query])
     for game in gamedata.gamelst:
@@ -78,17 +89,27 @@ def search_best_match_from_game(game_list):
     top10_best_match = [(gamedata.gamelst[index], res[index]) for index in descending_index[:10]]
     return top10_best_match
 
-def searchbyname(name:str):
+def searchbyname(query_name: str):
+    result = {}
     for game in gamedata.gamelst:
-        if game.name.upper() == name.upper():
-            gamename = game.name
-            gameprice = game.price
-            player = game.playertype
-            gametags = [key for key, value in game.tags.items() if value == 1]
-            gamedesc = game.description
-            currentuser.addhistory(game.tags)
-            return f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc}"
-    return False
+        similarity = fuzz.partial_ratio(game.name.upper(), query_name.upper())
+        result[game] = similarity
+    sorted_result = sorted(result.items(), key=lambda item: item[1], reverse=True)
+    if currentuser and sorted_result[0][1] >= 80:
+        currentuser.addhistory(sorted_result[0][0].tags)
+    return [game for game, similarity in sorted_result[:10]]
+
+    # ------------ For Debugging -------------------
+    # top10_results = [(game, similarity) for game, similarity in sorted_result[:10]]
+    # formatted_result = []
+    # for game, similarity in top10_results:
+    #     gamename = game.name
+    #     gameprice = game.price
+    #     player = game.playertype
+    #     gametags = [key for key, value in game.tags.items() if value == 1]
+    #     gamedesc = game.description
+    #     formatted_result.append(f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc} | Similarity: {similarity}%") 
+    # return formatted_result if formatted_result else "Not Found."
 
 def searchbytags(tagname:str):
     result = []
@@ -99,8 +120,10 @@ def searchbytags(tagname:str):
             player = game.playertype
             gametags = [key for key, value in game.tags.items() if value == 1]
             gamedesc = game.description
-            currentuser.addhistory(game.tags)
-            result.append(f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc}")
+            if currentuser:
+                currentuser.addhistory(game.tags)
+            # result.append(f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc}") # For debugging
+            result.append(game)
     return result if result is not None else False
 
 print('----------By Name---------------')
