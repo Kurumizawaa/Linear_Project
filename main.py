@@ -10,6 +10,7 @@ import userdata
 app = FastAPI()
 
 currentuser = None
+currentuser = userdata.penis
 
 def login(username:str, password:str):
     for user in userdata.userlst:
@@ -33,7 +34,19 @@ def searchbestmatch(playertype, query:dict):
     """Input : playertype(Single | Multi), query(Tags)
        Operation : construct a vector of query then dot product by all game tags vector that pass playertype filter divide by size of query vector dot size of game tags vector
        Output : vector of games (1x10) sorted by cosine similarity score in descending order"""
-    currentuser.searchhistory.append(query)
+    currentuser.addhistory(query)
+    result = {}
+    searchquery = np.array([query[i] for i in query])
+    for game in gamedata.gamelst:
+        if game.playertype == playertype:
+            gamegenre = np.array([game.tags[i] for i in game.tags])
+            cosinesim = np.dot(searchquery,gamegenre)/(norm(searchquery)*norm(gamegenre))
+            result[game] = cosinesim
+    sorted_result = sorted(result.items(), key=lambda item: item[1], reverse=True)
+    sorted_result = [(game, cosinesim) for game, cosinesim in sorted_result]
+    return sorted_result[:10]
+
+def besthistorymatch(playertype, query:dict):
     result = {}
     searchquery = np.array([query[i] for i in query])
     for game in gamedata.gamelst:
@@ -73,7 +86,7 @@ def searchbyname(name:str):
             player = game.playertype
             gametags = [key for key, value in game.tags.items() if value == 1]
             gamedesc = game.description
-            currentuser.searchhistory.append(game.tags)
+            currentuser.addhistory(game.tags)
             return f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc}"
     return False
 
@@ -86,7 +99,7 @@ def searchbytags(tagname:str):
             player = game.playertype
             gametags = [key for key, value in game.tags.items() if value == 1]
             gamedesc = game.description
-            currentuser.searchhistory.append(game.tags)
+            currentuser.addhistory(game.tags)
             result.append(f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc}")
     return result if result is not None else False
 
@@ -111,11 +124,11 @@ for genre in gamedata.genrelst:
     genrequery[genre] = inp[i]
     i += 1
 
-print('-----------------By Genre----------------')
+print('-----------------By Multiple Tags ----------------')
 
 print(searchbestmatch('Single',genrequery))
 
 print('----------------By history-----------------')
 
-print(searchbestmatch('Multi',currentuser.getsearchavg()))
-print(searchbestmatch('Single',currentuser.getsearchavg()))
+print(besthistorymatch('Multi',currentuser.getsearchavg()))
+print(besthistorymatch('Single',currentuser.getsearchavg()))
