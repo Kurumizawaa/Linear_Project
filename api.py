@@ -42,3 +42,7 @@ async def index():
 @app.get('/currentuser') # get current user
 async def currentuser():
     return main.currentuser
+
+@app.get('/gettags') # get common tags
+async def gettags():
+    return gamedata.genre
