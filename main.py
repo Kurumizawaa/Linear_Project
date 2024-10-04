@@ -132,7 +132,9 @@ print(searchbyname('Firelight Fantasy: Resistance'))
 
 print('--------------By Tags-------------------')
 
-print('\n'.join(searchbytags('RPG')))
+bytagsresult = [game.name for game in searchbytags('RPG')]
+print('\n'.join(bytagsresult))
+# print('\n'.join(searchbytags('RPG')))
 
 genrequery = {i : 0 for i in gamedata.genrelst}
 
