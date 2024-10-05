@@ -2,6 +2,10 @@
 from fastapi import FastAPI, HTTPException
 import uvicorn
 
+# Graph Plotting
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 # Vector/Matrix Stuff
 import numpy as np
 from numpy.linalg import norm
@@ -16,29 +20,58 @@ import userdata
 app = FastAPI()
 
 currentuser = None
-currentuser = userdata.penis
-    
+
+encryptionkey = np.array([[1,0,0,0],
+                          [2,1,0,0],
+                          [3,3,1,0],
+                          [4,6,4,1]])
+
 def login(username:str, password:str):
+    global currentuser
     for user in userdata.userlst:
-        if user.username == username and user.password == password:
-            currentuser = user
-            return user
+        if user.username == username:
+            password = [ord(char) for char in password]
+            passlen = len(password)
+            if passlen > 16:
+                print('u fool')
+                return
+            elif passlen == user.passlen:
+                if passlen < 16:
+                    password.extend([0]*(16-passlen))
+                passwordmat = np.array(password).reshape(4,4)
+                passwordmat = np.matmul(encryptionkey, passwordmat)
+                if passwordmat.all() == user.password.all():
+                    currentuser = user
+            return currentuser
     return "Incorrect username or password"
 
-def register(username:str, passsword:str, passwordconfirm:str):
+def register(username:str, password:str, passwordconfirm:str): #TODO: MOVE PASSWORDCONFIRM TO FRONTEND LATER
+    global currentuser
     for user in userdata.userlst:
-        if user.name == username:
+        if user.username == username:
             return "Username Taken"
-    if passsword == passwordconfirm:
-        newuser = userdata.User(username,passsword)
-        userdata.userlst.append(newuser)
-        return newuser
+    if password == passwordconfirm:
+        password = [ord(char) for char in password]
+        if len(password) > 16:
+            print('no, less than 16 u imbecile')
+            return
+        else:
+            passlen = len(password)
+            if passlen < 16:
+                password.extend([0]*(16-passlen))
+            passwordmat = np.array(password).reshape(4,4)
+            passwordmat = np.matmul(encryptionkey, passwordmat)
+            newuser = userdata.User(username, passwordmat, passlen)
+            userdata.userlst.append(newuser)
+            currentuser = newuser
+            return newuser
     else:
+        print("Password Doesn't Match")
         return "Password Doesn't Match"
     
 def logout():
     currentuser = None
-    return
+    return currentuser
     
 def searchbestmatch(playertype, query:dict):
     """Input : playertype(Single | Multi), query(Tags)
@@ -157,3 +190,28 @@ print('----------------By history-----------------')
 
 print(besthistorymatch('Multi',currentuser.getsearchavg()))
 print(besthistorymatch('Single',currentuser.getsearchavg()))
+
+print("-" * 50)
+
+def covarience(game_list):
+    res = [[game.price, game.reviewtype] for game in game_list]
+    print(res)
+    game_matrix = np.array(res)
+    row_mean = np.mean(game_matrix, axis=0)
+    row_mean_matrix = np.tile(row_mean, (len(game_list), 1))
+    print(row_mean_matrix)
+    game_matrix_normalize = game_matrix - row_mean_matrix
+    print(game_matrix_normalize)
+    cov = (1/len(game_list)) * np.matmul(game_matrix_normalize.T,game_matrix_normalize)
+    return cov
+
+res = search_best_match_from_game([game for game in gamedata.gamelst if game.name.upper() == "limbus company".upper()])
+res = [game for game, _ in res]
+sns.heatmap(covarience(res), annot=True, cmap="coolwarm", fmt=".2f")
+plt.title("Covariance Matrix")
+plt.show()
+
+print(currentuser)
+print(register('Nate Higgers','12345','12345'))
+print(login('Nate Higgers', '12345'))
+print(logout())

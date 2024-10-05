@@ -2,9 +2,10 @@ import numpy as np
 import gamedata
 
 class User:
-    def __init__(self, username, password):
+    def __init__(self, username, password, passlen):
         self.username = username
         self.password = password
+        self.passlen = passlen
         self.searchhistory = {i : 0 for i in gamedata.genrelst}
         self.searchamount = 0
     
@@ -22,5 +23,3 @@ class User:
         return avgdict
 
 userlst =[]
-penis = User('Mr.Penis', '1234')
-userlst.append(penis)
