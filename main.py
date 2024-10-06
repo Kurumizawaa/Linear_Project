@@ -2,16 +2,18 @@
 from fastapi import FastAPI, HTTPException
 import uvicorn
 
-# Graph Plotting
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 # Vector/Matrix Stuff
 import numpy as np
+np.set_printoptions(legacy='1.25')
 from numpy.linalg import norm
 
 # for String comparison
 from fuzzywuzzy import fuzz
+
+# Google Search
+import requests
+import re
+from bs4 import BeautifulSoup
 
 # Database
 import gamedata
@@ -33,47 +35,43 @@ def login(username:str, password:str):
             password = [ord(char) for char in password]
             passlen = len(password)
             if passlen > 16:
-                print('u fool')
-                return
+                raise HTTPException(status_code=400, detail="Password must be less than 16 characters")
             elif passlen == user.passlen:
                 if passlen < 16:
                     password.extend([0]*(16-passlen))
                 passwordmat = np.array(password).reshape(4,4)
                 passwordmat = np.matmul(encryptionkey, passwordmat)
-                if passwordmat.all() == user.password.all():
+                if np.array_equal(passwordmat, np.array(user.password).reshape(4,4)):
                     currentuser = user
-            return currentuser
-    return "Incorrect username or password"
+                    return currentuser
+                else:
+                    raise HTTPException(status_code=400, detail="Incorrect password")
+            raise HTTPException(status_code=400, detail="Incorrect password")
+    raise HTTPException(status_code=400, detail="User not found")
 
-def register(username:str, password:str, passwordconfirm:str): #TODO: MOVE PASSWORDCONFIRM TO FRONTEND LATER
-    global currentuser
+def signup(username:str, password:str): #TODO: MOVE PASSWORDCONFIRM TO FRONTEND LATER
     for user in userdata.userlst:
         if user.username == username:
-            return "Username Taken"
-    if password == passwordconfirm:
-        password = [ord(char) for char in password]
-        if len(password) > 16:
-            print('no, less than 16 u imbecile')
-            return
-        else:
-            passlen = len(password)
-            if passlen < 16:
-                password.extend([0]*(16-passlen))
-            passwordmat = np.array(password).reshape(4,4)
-            passwordmat = np.matmul(encryptionkey, passwordmat)
-            newuser = userdata.User(username, passwordmat, passlen)
-            userdata.userlst.append(newuser)
-            currentuser = newuser
-            return newuser
+            raise HTTPException(status_code=400, detail="Username already exists")
+    password = [ord(char) for char in password]
+    if len(password) > 16:
+        raise HTTPException(status_code=400, detail="Password must be less than 16 characters")
     else:
-        print("Password Doesn't Match")
-        return "Password Doesn't Match"
-    
+        passlen = len(password)
+        if passlen < 16:
+            password.extend([0]*(16-passlen))
+        passwordmat = np.array(password).reshape(4,4)
+        passwordmat = np.matmul(encryptionkey, passwordmat)
+        newuser = userdata.User(username, passwordmat.tolist(), passlen)
+        userdata.userlst.append(newuser)
+        return newuser
+
 def logout():
+    global currentuser
     currentuser = None
     return currentuser
     
-def searchbestmatch(playertype, query:dict):
+def searchby_playertype_genre(playertype, query:dict):
     """Input : playertype(Single | Multi), query(Tags)
        Operation : construct a vector of query then dot product by all game tags vector that pass playertype filter divide by size of query vector dot size of game tags vector
        Output : vector of games (1x10) sorted by cosine similarity score in descending order"""
@@ -87,21 +85,56 @@ def searchbestmatch(playertype, query:dict):
             cosinesim = np.dot(searchquery,gamegenre)/(norm(searchquery)*norm(gamegenre))
             result[game] = cosinesim
     sorted_result = sorted(result.items(), key=lambda item: item[1], reverse=True)
-    sorted_result = [(game, cosinesim) for game, cosinesim in sorted_result]
+    sorted_result = [game for game, cosinesim in sorted_result]
     return sorted_result[:10]
+def searchbestmatchsingle(query:dict):
+    return searchby_playertype_genre('Single', query)
+def searchbestmatchmulti(query:dict):
+    return searchby_playertype_genre('Multi', query)
 
-def besthistorymatch(playertype, query:dict):
+def searchbestmatch(query:dict):
+    if currentuser:
+        currentuser.addhistory(query)
     result = {}
     searchquery = np.array([query[i] for i in query])
     for game in gamedata.gamelst:
-        if game.playertype == playertype:
-            gamegenre = np.array([game.tags[i] for i in game.tags])
-            cosinesim = np.dot(searchquery,gamegenre)/(norm(searchquery)*norm(gamegenre))
-            result[game] = cosinesim
+        gamegenre = np.array([game.tags[i] for i in game.tags])
+        cosinesim = np.dot(searchquery,gamegenre)/(norm(searchquery)*norm(gamegenre))
+        result[game] = cosinesim
     sorted_result = sorted(result.items(), key=lambda item: item[1], reverse=True)
-    sorted_result = [(game, cosinesim) for game, cosinesim in sorted_result]
+    sorted_result = [game for game, cosinesim in sorted_result]
     return sorted_result[:10]
 
+def websearch(tags:str, playertype:str):
+    tags = [int(i) for i in tags]
+    i = 0
+    genrequery = {i : 0 for i in gamedata.genrelst}
+    for genre in gamedata.genrelst:
+        genrequery[genre] = tags[i]
+        i += 1
+    if playertype == 'mixed':
+        return searchbestmatch(genrequery)
+    elif playertype == 'single':
+        return searchbestmatchsingle(genrequery)
+    else: # playertype == 'multi'
+        return searchbestmatchmulti(genrequery)
+
+def besthistorymatch(query:dict):
+    result = {}
+    searchquery = np.array([query[i] for i in query])
+    for game in gamedata.gamelst:
+        gamegenre = np.array([game.tags[i] for i in game.tags])
+        cosinesim = np.dot(searchquery,gamegenre)/(norm(searchquery)*norm(gamegenre))
+        result[game] = cosinesim
+    sorted_result = sorted(result.items(), key=lambda item: item[1], reverse=True)
+    sorted_result = [game for game, cosinesim in sorted_result]
+    return sorted_result[:10]
+def searchuserhistory():
+    if currentuser == None or currentuser.searchamount == 0:
+        return []
+    else:
+        return besthistorymatch(currentuser.getsearchavg())
+    
 def matrix_row_cosine_similarity(A, B):
     dot_product = np.matmul(A, B.T)
     A_norms = norm(A, axis=1).reshape(-1, 1)
@@ -159,39 +192,31 @@ def searchbytags(tagname:str):
             result.append(game)
     return result if result is not None else False
 
-print('----------By Name---------------')
+def getsteamlink(query:str):
+    searchquery = f'{query.replace(' ','+')}+on+Steam'
+    x = requests.get(f'https://www.google.com/search?hl=en&tbm=isch&q={searchquery}')
+    soup = BeautifulSoup(x.text, 'html.parser')
+    steamlinks = soup.find_all('a')
+    for steamlink in steamlinks:
+        href = steamlink.get('href')
+        if 'url?q=' in href and 'https://store.steampowered.com/app/' in href:
+            return href[7:]
 
-print(searchbyname('Firelight Fantasy: Resistance'))
-
-print('--------------By Tags-------------------')
-
-bytagsresult = [game.name for game in searchbytags('RPG')]
-print('\n'.join(bytagsresult))
-# print('\n'.join(searchbytags('RPG')))
-
-genrequery = {i : 0 for i in gamedata.genrelst}
-
-# Manual input
-# for genre in gamedata.genrelst:
-#     genrequery[genre] = input(f'{genre} : ')
-
-# Auto input : Targeted 'Black Myth: Wukong'
-inp = [1,1,0,1,0,1,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,1,0,0,1,0,1,1]
-i = 0
-for genre in gamedata.genrelst:
-    genrequery[genre] = inp[i]
-    i += 1
-
-print('-----------------By Multiple Tags ----------------')
-
-print(searchbestmatch('Single',genrequery))
-
-print('----------------By history-----------------')
-
-print(besthistorymatch('Multi',currentuser.getsearchavg()))
-print(besthistorymatch('Single',currentuser.getsearchavg()))
-
-print("-" * 50)
+def getimglink(url:str):
+    x = requests.get(url)
+    soup = BeautifulSoup(x.text, 'html.parser')
+    images = soup.find_all('img')
+    for image in images:
+        if 'store_item_assets/steam/apps/' in image.get('src'):
+            return image.get('src')
+        
+def getsteam(gamename:str):
+    result = {'steamlink': '', 'imgsrc': ''}
+    steamlink = getsteamlink(gamename)
+    imgsrc = getimglink(steamlink) if steamlink else 'https://youtu.be/dQw4w9WgXcQ?si=6bKOlVvM5oFl5T1J'
+    result['steamlink'] = steamlink if steamlink else 'https://youtu.be/dQw4w9WgXcQ?si=6bKOlVvM5oFl5T1J'
+    result['imgsrc'] = imgsrc
+    return result
 
 def covarience(game_list):
     res = [[game.price, game.reviewtype] for game in game_list]
@@ -205,13 +230,53 @@ def covarience(game_list):
     cov = (1/len(game_list)) * np.matmul(game_matrix_normalize.T,game_matrix_normalize)
     return cov
 
-res = search_best_match_from_game([game for game in gamedata.gamelst if game.name.upper() == "limbus company".upper()])
-res = [game for game, _ in res]
-sns.heatmap(covarience(res), annot=True, cmap="coolwarm", fmt=".2f")
-plt.title("Covariance Matrix")
-plt.show()
+# ---------------- COVARIANCE TEST ---------------- 
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# res = search_best_match_from_game([game for game in gamedata.gamelst if game.name.upper() == "limbus company".upper()])
+# res = [game for game, _ in res]
+# sns.heatmap(covarience(res), annot=True, cmap="coolwarm", fmt=".2f")
+# plt.title("Covariance Matrix")
+# plt.show()
 
+
+################ TESTING AREA ################
+
+# print('----------By Name---------------')
+
+# print(searchbyname('Firelight Fantasy: Resistance'))
+
+# print('--------------By Tags-------------------')
+
+# bytagsresult = [game.name for game in searchbytags('RPG')]
+# print('\n'.join(bytagsresult[:5]))
+# # print('\n'.join(searchbytags('RPG')))
+
+# genrequery = {i : 0 for i in gamedata.genrelst}
+
+# # Manual input
+# # for genre in gamedata.genrelst:
+# #     genrequery[genre] = input(f'{genre} : ')
+
+# # Auto input : Targeted 'Black Myth: Wukong'
+# inp = [1,1,0,1,0,1,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,1,0,0,1,0,1,1]
+# i = 0
+# for genre in gamedata.genrelst:
+#     genrequery[genre] = inp[i]
+#     i += 1
+
+# print('-----------------By Multiple Tags ----------------')
+
+# print(searchby_playertype_genre('Single',genrequery))
+
+# print('----------------By history-----------------')
+
+# if currentuser != None:
+#     print(besthistorymatch(currentuser.getsearchavg()))
+
+################ TESTING AREA ################
+
+print(signup('natehiggers', '12345'))
+print(login('natehiggers', '12345'))
 print(currentuser)
-print(register('Nate Higgers','12345','12345'))
-print(login('Nate Higgers', '12345'))
 print(logout())
