@@ -17,9 +17,12 @@ class User:
         return self.searchhistory
 
     def getsearchavg(self):
-        avgdict = self.searchhistory
-        for key in avgdict:
-            avgdict[key] /= self.searchamount
-        return avgdict
+        if self.searchamount == 0:
+            return self.searchhistory
+        else:
+            avgdict = self.searchhistory
+            for key in avgdict:
+                avgdict[key] /= self.searchamount
+            return avgdict
 
-userlst =[]
+userlst = []
