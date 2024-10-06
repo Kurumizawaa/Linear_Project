@@ -39,9 +39,6 @@ genre = {i : 0 for i in genrelst}
 
 gamelst = []
 for index, game in selected_df.iterrows():
-
-# Overwhelm pos | very pos | pos | mostly pos | mixed
-
     match game['Review_type']:
         case 'Overwhelmingly Positive':
             reviewtype = 4
