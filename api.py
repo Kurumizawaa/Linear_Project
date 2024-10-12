@@ -33,10 +33,10 @@ app.add_middleware(
 )
 #----------------DON'T TOUCH------------------------#
 
-@app.get("/") # Recommend from search History
-async def index():
-    result = main.searchuserhistory()
-    return result
+# @app.get("/") # Recommend from search History
+# async def index():
+#     result = main.searchuserhistory()
+#     return result
 
 @app.get('/currentuser') # get current user
 async def currentuser():
@@ -69,3 +69,11 @@ async def getsteam(gamename: str):
 async def seachbestmatch(tags: str, playertype: str):
     return main.websearch(tags, playertype)
 # Test : 110101010000011001000001001011 | Must show Black Myth: Wukong
+
+@app.get('/searchtag') # find best match for single tag
+async def searchtag(tag: str, playertype: str):
+    return main.websearchtag(tag, playertype)
+
+@app.get('/besthistorymatch') # find best match from search history
+async def besthistorymatch():
+    return main.searchuserhistory()
