@@ -86,11 +86,7 @@ def searchby_playertype_genre(playertype, query:dict):
             result[game] = cosinesim
     sorted_result = sorted(result.items(), key=lambda item: item[1], reverse=True)
     sorted_result = [game for game, cosinesim in sorted_result]
-    return sorted_result[:10]
-def searchbestmatchsingle(query:dict):
-    return searchby_playertype_genre('Single', query)
-def searchbestmatchmulti(query:dict):
-    return searchby_playertype_genre('Multi', query)
+    return sorted_result[:20]
 
 def searchbestmatch(query:dict):
     if currentuser:
@@ -103,7 +99,7 @@ def searchbestmatch(query:dict):
         result[game] = cosinesim
     sorted_result = sorted(result.items(), key=lambda item: item[1], reverse=True)
     sorted_result = [game for game, cosinesim in sorted_result]
-    return sorted_result[:10]
+    return sorted_result[:20]
 
 def websearch(tags:str, playertype:str):
     tags = [int(i) for i in tags]
@@ -112,12 +108,12 @@ def websearch(tags:str, playertype:str):
     for genre in gamedata.genrelst:
         genrequery[genre] = tags[i]
         i += 1
-    if playertype == 'mixed':
+    if playertype == 'single':
+        return searchby_playertype_genre('Single', genrequery)
+    elif playertype == 'multi':
+        return searchby_playertype_genre('Multi', genrequery)
+    else: # playertype == 'mixed'
         return searchbestmatch(genrequery)
-    elif playertype == 'single':
-        return searchbestmatchsingle(genrequery)
-    else: # playertype == 'multi'
-        return searchbestmatchmulti(genrequery)
 
 def besthistorymatch(query:dict):
     result = {}
@@ -163,34 +159,35 @@ def searchbyname(query_name: str):
     sorted_result = sorted(result.items(), key=lambda item: item[1], reverse=True)
     if currentuser and sorted_result[0][1] >= 80:
         currentuser.addhistory(sorted_result[0][0].tags)
-    return [game for game, similarity in sorted_result[:10]]
-
-    # ------------ For Debugging -------------------
-    # top10_results = [(game, similarity) for game, similarity in sorted_result[:10]]
-    # formatted_result = []
-    # for game, similarity in top10_results:
-    #     gamename = game.name
-    #     gameprice = game.price
-    #     player = game.playertype
-    #     gametags = [key for key, value in game.tags.items() if value == 1]
-    #     gamedesc = game.description
-    #     formatted_result.append(f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc} | Similarity: {similarity}%") 
-    # return formatted_result if formatted_result else "Not Found."
+    return [game for game, similarity in sorted_result[:20]]
 
 def searchbytags(tagname:str):
     result = []
+    if currentuser:
+        currentuser.searchhistory[tagname] += 1
+        currentuser.searchamount += 1
     for game in gamedata.gamelst:
         if game.tags[tagname] == 1:
-            gamename = game.name
-            gameprice = game.price
-            player = game.playertype
-            gametags = [key for key, value in game.tags.items() if value == 1]
-            gamedesc = game.description
-            if currentuser:
-                currentuser.addhistory(game.tags)
-            # result.append(f"{gamename} | {gameprice} | {player} | {gametags} | {gamedesc}") # For debugging
             result.append(game)
-    return result if result is not None else False
+    result = sorted(result, key=lambda game: game.reviewno, reverse=True)
+    return result[:20]
+def searchby_playertype_tag(tagname:str, playertype):
+    result = []
+    if currentuser:
+        currentuser.searchhistory[tagname] += 1
+        currentuser.searchamount += 1
+    for game in gamedata.gamelst:
+        if game.tags[tagname] == 1 and game.playertype == playertype:
+            result.append(game)
+    result = sorted(result, key=lambda game: game.reviewno, reverse=True)
+    return result[:20]
+def websearchtag(tagname:str, playertype):
+    if playertype == 'single':
+        return searchby_playertype_tag(tagname, 'Single')
+    elif playertype == 'multi':
+        return searchby_playertype_tag(tagname, 'Multi')
+    else: # playertype == 'mixed'
+        return searchbytags(tagname)
 
 def getsteamlink(query:str):
     searchquery = f'{query.replace(' ','+')}+on+Steam'
@@ -279,4 +276,3 @@ def covarience(game_list):
 print(signup('natehiggers', '12345'))
 print(login('natehiggers', '12345'))
 print(currentuser)
-print(logout())
