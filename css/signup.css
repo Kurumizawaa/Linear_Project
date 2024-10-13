@@ -1,0 +1,59 @@
+.navbar
+{
+    font-family: 'VALORANT', sans-serif; 
+    font-size: 20px; 
+    background: linear-gradient(rgba(1,1,1,0.750),rgba(1,1,1,0.750));
+}
+
+#header
+{
+    font-family: 'VALORANT', sans-serif; 
+    font-size: 20px; 
+}
+
+#signup-username,#signup-password,#signup-passwordconfirm
+{
+    font-family: 'D-DIN', sans-serif; 
+    font-weight: bold;
+    font-size: 25px; 
+}
+
+/* Text input floating */
+.form-floating label {
+    transition: all 0.2s ease-in-out;
+}
+
+.form-floating input:focus ~ label,
+.form-floating input:not(:placeholder-shown) ~ label {
+    font-size: 0.8rem;
+    transform: translateY(-30px);
+}
+
+.form-control {
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+/* Hover Animation */
+.underline-hover {
+    position: relative;
+    display: inline-block;
+  }
+  
+.underline-hover::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;;
+    bottom: 0;
+    left: 0;
+    background-color: currentColor;
+    visibility: hidden;
+    transform: scaleX(0);
+    transition: all 0.3s ease-in-out;
+  }
+  
+.underline-hover:hover::after {
+    visibility: visible;
+    transform: scaleX(1);
+  }

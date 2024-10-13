@@ -12,6 +12,7 @@ if __name__ == "__main__" :
 import main
 import gamedata
 import userdata
+import schema
 # ----------------------------
 
 # http://127.0.0.1:8000/docs
@@ -32,17 +33,47 @@ app.add_middleware(
 )
 #----------------DON'T TOUCH------------------------#
 
-@app.get("/") # Recommend from search History
-async def index():
-    result = []
-    result.extend(main.besthistorymatch('Multi',main.currentuser.getsearchavg()))
-    result.extend(main.besthistorymatch('Single',main.currentuser.getsearchavg()))
-    return result
+# @app.get("/") # Recommend from search History
+# async def index():
+#     result = main.searchuserhistory()
+#     return result
 
 @app.get('/currentuser') # get current user
 async def currentuser():
     return main.currentuser
 
+@app.post('/login') # log in
+async def login(login: schema.Login):
+    login = main.login(login.username, login.password)
+    return login
+
+@app.post('/signup') # sign up
+async def signup(signup: schema.Signup):
+    signup = main.signup(signup.username, signup.password)
+    return signup
+
+@app.get('/logout') # log out
+async def logout():
+    logout = main.logout()
+    return logout
+
 @app.get('/gettags') # get common tags
 async def gettags():
     return gamedata.genre
+
+@app.get('/getsteam') # get image source
+async def getsteam(gamename: str):
+    return main.getsteam(gamename)
+
+@app.get('/seachbestmatch') # find best match for query
+async def seachbestmatch(tags: str, playertype: str):
+    return main.websearch(tags, playertype)
+# Test : 110101010000011001000001001011 | Must show Black Myth: Wukong
+
+@app.get('/searchtag') # find best match for single tag
+async def searchtag(tag: str, playertype: str):
+    return main.websearchtag(tag, playertype)
+
+@app.get('/besthistorymatch') # find best match from search history
+async def besthistorymatch():
+    return main.searchuserhistory()

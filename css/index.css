@@ -13,16 +13,17 @@
 
 #searchbytags
 {
-    background-color: rgba(97, 68, 68, 0.438);
+    background-color: rgba(0, 0, 0, 0.5);
     font-family: 'VALORANT', sans-serif; 
     font-size: 30px;
+    color: rgb(0, 0, 0);
 }
 
 .searchbytags-title .line
 {
     width: 1000px;
     height: 4px;
-    background-color: rgba(1,1,1,1);
+    background-color: rgb(0, 0, 0);
     margin: 10px auto 24px auto;
 }
 
