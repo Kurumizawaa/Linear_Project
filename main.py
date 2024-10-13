@@ -171,7 +171,6 @@ def searchbytags(tagname:str):
             result.append(game)
     result = sorted(result, key=lambda game: game.reviewno, reverse=True)
     return result[:20]
-
 def searchby_playertype_tag(tagname:str, playertype):
     result = []
     if currentuser:
@@ -182,7 +181,6 @@ def searchby_playertype_tag(tagname:str, playertype):
             result.append(game)
     result = sorted(result, key=lambda game: game.reviewno, reverse=True)
     return result[:20]
-
 def websearchtag(tagname:str, playertype):
     if playertype == 'single':
         return searchby_playertype_tag(tagname, 'Single')
