@@ -1,11 +1,9 @@
 const api = "http://127.0.0.1:8000";
 
 const urlParams = new URLSearchParams(window.location.search);
-const tag = urlParams.get('tag')
-const playertype = urlParams.get('playertype')
-
-const searchnameprompt = document.getElementById("searchnameprompt"); // Select the search bar input
-const searchnamesubmit = document.getElementById("searchnamesubmit"); // Select the search button
+const searchname = urlParams.get('name')
+const searchnameprompt = document.getElementById("searchnameprompt")
+const searchnamesubmit = document.getElementById("searchnamesubmit")
 
 async function show_btn_login(){
     let response = await fetch(`${api}/currentuser`); // Fetch data from '/hotel' endpoint
@@ -21,15 +19,14 @@ async function show_btn_login(){
     }
 }
 
-async function showsearchtag(){
+async function showsearchname(){
     let headtext = document.getElementById("headtext")
-    headtext.innerHTML = `<h1 class="m-0 mb-4 fw-semibold text-wrap text-light text-center" style="font-size: 50px; max-width: 80vw;">Search by tag : ${tag}</h1>`
+    headtext.innerHTML = `<h1 class="m-0 mb-4 fw-semibold text-wrap text-light text-center" style="font-size: 50px ; max-width: 80vw;">Search results for : ${searchname}</h1>`
 }
 
 async function showgames(){
-    console.log('tag: ', tag)
-    console.log('playertype: ', playertype)
-    let response = await fetch(`${api}/searchtag?tag=${tag}&playertype=${playertype}`);
+    console.log('name: ', searchname)
+    let response = await fetch(`${api}/searchbyname?name=${searchname}`);
     let gamedata = await response.json();
     console.log(gamedata)
     let gamelist = document.getElementById("gamecard")
@@ -59,8 +56,8 @@ async function showgames(){
 }
 
 function logname(){
-  let prompt = searchnameprompt.value
-  window.location.href = `byname.html?name=${prompt}`;
+    let prompt = searchnameprompt.value
+    window.location.href = `byname.html?name=${prompt}`;
 }
 
 async function logout(){
@@ -69,7 +66,8 @@ async function logout(){
     window.location.href = "index.html";
 }
 
-searchnamesubmit.addEventListener("click", logname);
+searchnamesubmit.addEventListener("click", logname)
+
 show_btn_login();
-showsearchtag()
+showsearchname();
 showgames();

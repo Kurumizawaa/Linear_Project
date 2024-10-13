@@ -4,6 +4,9 @@ const urlParams = new URLSearchParams(window.location.search);
 const tags = urlParams.get('tags')
 const playertype = urlParams.get('playertype')
 
+const searchnameprompt = document.getElementById("searchnameprompt"); // Select the search bar input
+const searchnamesubmit = document.getElementById("searchnamesubmit"); // Select the search button
+
 async function show_btn_login(){
     let response = await fetch(`${api}/currentuser`); // Fetch data from '/hotel' endpoint
     let userdata = await response.json(); // Parse the JSON response
@@ -50,7 +53,10 @@ async function showgames(){
     }
 }
 
-
+function logname(){
+  let prompt = searchnameprompt.value
+  window.location.href = `byname.html?name=${prompt}`;
+}
 
 async function logout(){
     let response = await fetch(`${api}/logout`); // Fetch data from '/hotel' endpoint
@@ -58,5 +64,6 @@ async function logout(){
     window.location.href = "index.html";
 }
 
+searchnamesubmit.addEventListener("click", logname);
 show_btn_login();
 showgames();
