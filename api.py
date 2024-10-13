@@ -65,6 +65,10 @@ async def gettags():
 async def getsteam(gamename: str):
     return main.getsteam(gamename)
 
+@app.get('/searchbyname') # find best match from name
+async def searchname(name: str):
+    return main.searchbyname(name)
+
 @app.get('/seachbestmatch') # find best match for query
 async def seachbestmatch(tags: str, playertype: str):
     return main.websearch(tags, playertype)
