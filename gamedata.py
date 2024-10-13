@@ -2,20 +2,19 @@ import pandas as pd
 from collections import Counter
 
 class Game:
-    def __init__(self, name, playertype, gametag, price, reviewtype, description = None, link = None, imgsrc = None):
+    def __init__(self, name, playertype, gametag, price, reviewno, reviewtype, description = None):
         self.name = name
         self.playertype = playertype
         self.tags = {i : (1 if i in gametag else 0) for i in genre}
         self.price = price
+        self.reviewno = reviewno
         self.reviewtype = reviewtype
         self.description = None if not description else description
-        self.link = None if not link else link
-        self.imgsrc = None if not imgsrc else imgsrc
 
     def __str__(self) -> str:
         return f"{self.name}"
-        
-selected_df = pd.read_csv('main_data.csv', index_col=0)
+    
+selected_df = pd.read_csv('main_data.csv')
 
 countdict = Counter()
 for tags in selected_df['Tags']:
@@ -30,6 +29,8 @@ genrelst = []
 for tag in sorttag.keys():
     if tag not in genrelst:
         genrelst.append(tag)
+
+# print(genrelst)
 
 genre = {i : 0 for i in genrelst}
 
@@ -60,8 +61,9 @@ for index, game in selected_df.iterrows():
             'Single' if 'Singleplayer' in game['Tags'] else 'Multi', 
             game['Tags'], 
             game['Price'],
+            game['Review_no'],
             reviewtype,
             game['Description']
             ))
     
-mca_result = pd.read_csv('3000game_mca_10coordinates.csv', index_col=0)
+mca_result = pd.read_csv('3000game_mca_10coordinates.csv')

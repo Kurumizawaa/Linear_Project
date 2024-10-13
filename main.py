@@ -73,7 +73,8 @@ def logout():
     
 def searchby_playertype_genre(playertype, query:dict):
     """Input : playertype(Single | Multi), query(Tags)
-       Operation : construct a vector of query then dot product by all game tags vector that pass playertype filter divide by size of query vector dot size of game tags vector
+       Operation : construct a vector of query then dot product by all game tags vector that 
+                   pass playertype filter divide by size of query vector dot size of game tags vector
        Output : vector of games (1x10) sorted by cosine similarity score in descending order"""
     if currentuser:
         currentuser.addhistory(query)
@@ -125,6 +126,7 @@ def besthistorymatch(query:dict):
     sorted_result = sorted(result.items(), key=lambda item: item[1], reverse=True)
     sorted_result = [game for game, cosinesim in sorted_result]
     return sorted_result[:10]
+
 def searchuserhistory():
     if currentuser == None or currentuser.searchamount == 0:
         return []
@@ -140,7 +142,9 @@ def matrix_row_cosine_similarity(A, B):
 
 def search_best_match_from_game(game_list):
     """Input : game_list(list of game object)
-       Operation : construct matrix from row vector of tags of each input games and matrix from row vector of tags of all games then use each matrix row to perform cosine similarity then average all column to get 1D array then sort the array to get top 10 index then mapping each index to corresponding game object
+       Operation : construct matrix from row vector of tags of each input games and matrix from row vector of tags of all games 
+                   then use each matrix row to perform cosine similarity then average all column to get 1D array then sort the array 
+                   to get top 10 index then mapping each index to corresponding game object
        Output : vector of games (1x10)"""
     input_tags_matrix = np.array([[value for value in game.tags.values()] for game in game_list])
     all_game_tags_matrix = np.array([[value for value in game.tags.values()] for game in gamedata.gamelst])
@@ -285,7 +289,7 @@ def euclidean_distance(coord1, coord2):
 def cosine_similarity(v1,v2):
     return np.dot(v1,v2)/(norm(v1)*norm(v2))
 
-index = gamedata.gamelst.index([game for game in gamedata.gamelst if game.name.upper() == "muse dash".upper()][0])
+index = gamedata.gamelst.index([game for game in gamedata.gamelst if game.name.upper() == "ELDEN RING Shadow of the Erdtree".upper()][0])
 game_coords = gamedata.mca_result.loc[index].values
 
 distances = {}
