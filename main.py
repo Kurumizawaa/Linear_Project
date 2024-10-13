@@ -227,6 +227,12 @@ def covarience(game_list):
     cov = (1/len(game_list)) * np.matmul(game_matrix_normalize.T,game_matrix_normalize)
     return cov
 
+def euclidean_distance(coord1, coord2):
+    return np.sqrt(np.sum((coord1 - coord2) ** 2))
+
+def cosine_similarity(v1,v2):
+    return np.dot(v1,v2)/(norm(v1)*norm(v2))
+
 # ---------------- COVARIANCE TEST ---------------- 
 # import matplotlib.pyplot as plt
 # import seaborn as sns
@@ -235,53 +241,6 @@ def covarience(game_list):
 # sns.heatmap(covarience(res), annot=True, cmap="coolwarm", fmt=".2f")
 # plt.title("Covariance Matrix")
 # plt.show()
-
-
-################ TESTING AREA ################
-
-# print('----------By Name---------------')
-
-# print(searchbyname('Firelight Fantasy: Resistance'))
-
-# print('--------------By Tags-------------------')
-
-# bytagsresult = [game.name for game in searchbytags('RPG')]
-# print('\n'.join(bytagsresult[:5]))
-# # print('\n'.join(searchbytags('RPG')))
-
-# genrequery = {i : 0 for i in gamedata.genrelst}
-
-# # Manual input
-# # for genre in gamedata.genrelst:
-# #     genrequery[genre] = input(f'{genre} : ')
-
-# # Auto input : Targeted 'Black Myth: Wukong'
-# inp = [1,1,0,1,0,1,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,1,0,0,1,0,1,1]
-# i = 0
-# for genre in gamedata.genrelst:
-#     genrequery[genre] = inp[i]
-#     i += 1
-
-# print('-----------------By Multiple Tags ----------------')
-
-# print(searchby_playertype_genre('Single',genrequery))
-
-# print('----------------By history-----------------')
-
-# if currentuser != None:
-#     print(besthistorymatch(currentuser.getsearchavg()))
-
-################ TESTING AREA ################
-
-print(signup('natehiggers', '12345'))
-print(login('natehiggers', '12345'))
-print(currentuser)
-
-def euclidean_distance(coord1, coord2):
-    return np.sqrt(np.sum((coord1 - coord2) ** 2))
-
-def cosine_similarity(v1,v2):
-    return np.dot(v1,v2)/(norm(v1)*norm(v2))
 
 index = gamedata.gamelst.index([game for game in gamedata.gamelst if game.name.upper() == "muse dash".upper()][0])
 game_coords = gamedata.mca_result.loc[index].values
