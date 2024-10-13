@@ -215,3 +215,23 @@ print(currentuser)
 print(register('Nate Higgers','12345','12345'))
 print(login('Nate Higgers', '12345'))
 print(logout())
+
+def euclidean_distance(coord1, coord2):
+    return np.sqrt(np.sum((coord1 - coord2) ** 2))
+
+def cosine_similarity(v1,v2):
+    return np.dot(v1,v2)/(norm(v1)*norm(v2))
+
+index = gamedata.gamelst.index([game for game in gamedata.gamelst if game.name.upper() == "muse dash".upper()][0])
+game_coords = gamedata.mca_result.loc[index].values
+
+distances = {}
+for other_index, other_coords in gamedata.mca_result.iterrows():
+    if other_index != index:
+        distances[other_index] = euclidean_distance(game_coords, other_coords.values)
+
+sorted_distances = sorted(distances.items(), key=lambda x: x[1])
+
+print(f"Games similar to {gamedata.gamelst[index].name}:")
+for other_index, distance in sorted_distances[:10]:
+    print(f"{gamedata.gamelst[other_index].name}: {distance}")

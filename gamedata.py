@@ -15,9 +15,7 @@ class Game:
     def __str__(self) -> str:
         return f"{self.name}"
         
-df = pd.read_csv('steam_cleaned.csv')
-selected_df = df[['Name','Price','Review_type','Tags','Description']]
-selected_df.dropna(inplace=True)
+selected_df = pd.read_csv('main_data.csv', index_col=0)
 
 countdict = Counter()
 for tags in selected_df['Tags']:
@@ -32,8 +30,6 @@ genrelst = []
 for tag in sorttag.keys():
     if tag not in genrelst:
         genrelst.append(tag)
-
-# print(genrelst)
 
 genre = {i : 0 for i in genrelst}
 
@@ -70,3 +66,5 @@ for index, game in selected_df.iterrows():
             reviewtype,
             game['Description']
             ))
+    
+mca_result = pd.read_csv('3000game_mca_10coordinates.csv', index_col=0)
