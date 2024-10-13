@@ -13,10 +13,9 @@ class Game:
 
     def __str__(self) -> str:
         return f"{self.name}"
-        
-df = pd.read_csv('steam_cleaned.csv')
-selected_df = df[['Name','Price','Review_no','Review_type','Tags','Description']]
-selected_df.dropna(inplace=True)
+    
+selected_df = pd.read_csv('main_data.csv')
+
 
 countdict = Counter()
 for tags in selected_df['Tags']:
@@ -67,3 +66,5 @@ for index, game in selected_df.iterrows():
             reviewtype,
             game['Description']
             ))
+    
+mca_result = pd.read_csv('3000game_mca_10coordinates.csv')
