@@ -20,9 +20,9 @@ class User:
         if self.searchamount == 0:
             return self.searchhistory
         else:
-            avgdict = self.searchhistory
-            for key in avgdict:
-                avgdict[key] /= self.searchamount
+            avgdict = {}
+            for key in self.searchhistory:
+                avgdict[key] = self.searchhistory[key] / self.searchamount
             return avgdict
 
 userlst = []
