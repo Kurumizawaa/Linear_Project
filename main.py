@@ -21,9 +21,6 @@ import userdata
 
 app = FastAPI()
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 currentuser = None
 
 encryptionkey = np.array([[1,0,0,0],
@@ -222,7 +219,7 @@ def getsteam(gamename:str):
     result['imgsrc'] = imgsrc
     return result
 
-def covarience(game_list):
+def covariance(game_list):
     res = [[game.price, game.reviewtype] for game in game_list]
     print(res)
     game_matrix = np.array(res)
@@ -264,3 +261,4 @@ def mca_best_match(game_name):
     sorted_distances = sorted(distances.items(), key=lambda x: x[1])
     return [gamedata.gamelst[index] for index, distance in sorted_distances[:20]]
 
+print(covariance(mca_best_match("elden ring")))
