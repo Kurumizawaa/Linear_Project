@@ -197,7 +197,7 @@ def websearchtag(tagname:str, playertype):
         return searchbytags(tagname)
 
 def getsteamlink(query:str):
-    searchquery = f'{query.replace(' ','+')}+on+Steam'
+    searchquery = f'{query.replace(" ","+")}+on+Steam'
     x = requests.get(f'https://www.google.com/search?hl=en&tbm=isch&q={searchquery}')
     soup = BeautifulSoup(x.text, 'html.parser')
     steamlinks = soup.find_all('a')
