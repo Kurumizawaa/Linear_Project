@@ -21,6 +21,9 @@ import userdata
 
 app = FastAPI()
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 currentuser = None
 
 encryptionkey = np.array([[1,0,0,0],
@@ -49,7 +52,7 @@ def login(username:str, password:str):
             raise HTTPException(status_code=400, detail="Incorrect password")
     raise HTTPException(status_code=400, detail="User not found")
 
-def signup(username:str, password:str): #TODO: MOVE PASSWORDCONFIRM TO FRONTEND LATER
+def signup(username:str, password:str):
     for user in userdata.userlst:
         if user.username == username:
             raise HTTPException(status_code=400, detail="Username already exists")
@@ -147,7 +150,7 @@ def search_best_match_from_game(game_list):
                    to get top 10 index then mapping each index to corresponding game object
        Output : vector of games (1x10)"""
     input_tags_matrix = np.array([[value for value in game.tags.values()] for game in game_list])
-    all_game_tags_matrix = np.array([[value for value in game.tags.values()] for game in gamedata.gamelst])
+    all_game_tags_matrix = np.array([[value for value in game.tags.values()] for game in gamedata.gamelst if game not in game_list])
     res = matrix_row_cosine_similarity(input_tags_matrix, all_game_tags_matrix)
     res = np.mean(res, axis=0)
     ascending_index = np.argsort(res)
@@ -246,16 +249,18 @@ def cosine_similarity(v1,v2):
 # plt.title("Covariance Matrix")
 # plt.show()
 
-index = gamedata.gamelst.index([game for game in gamedata.gamelst if game.name.upper() == "muse dash".upper()][0])
-game_coords = gamedata.mca_result.loc[index].values
+def mca_best_match(game_name):
+    game = [game for game in gamedata.gamelst if game.name.upper() == game_name.upper()]
+    if game == []:
+        return None
+    index = gamedata.gamelst.index(game[0])
+    game_coords = gamedata.mca_result.loc[index].values
 
-distances = {}
-for other_index, other_coords in gamedata.mca_result.iterrows():
-    if other_index != index:
-        distances[other_index] = euclidean_distance(game_coords, other_coords.values)
+    distances = {}
+    for other_index, other_coords in gamedata.mca_result.iterrows():
+        if other_index != index:
+            distances[other_index] = euclidean_distance(game_coords, other_coords.values)
 
-sorted_distances = sorted(distances.items(), key=lambda x: x[1])
+    sorted_distances = sorted(distances.items(), key=lambda x: x[1])
+    return [gamedata.gamelst[index] for index, distance in sorted_distances[:20]]
 
-print(f"Games similar to {gamedata.gamelst[index].name}:")
-for other_index, distance in sorted_distances[:10]:
-    print(f"{gamedata.gamelst[other_index].name}: {distance}")

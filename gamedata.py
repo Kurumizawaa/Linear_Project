@@ -14,7 +14,7 @@ class Game:
     def __str__(self) -> str:
         return f"{self.name}"
     
-selected_df = pd.read_csv('main_data.csv')
+selected_df = pd.read_csv('main_data.csv', index_col=0)
 
 countdict = Counter()
 for tags in selected_df['Tags']:
@@ -66,4 +66,4 @@ for index, game in selected_df.iterrows():
             game['Description']
             ))
     
-mca_result = pd.read_csv('3000game_mca_10coordinates.csv')
+mca_result = pd.read_csv('3000game_mca_10coordinates.csv', index_col=0)

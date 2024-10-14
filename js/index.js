@@ -4,6 +4,7 @@ const searchnameprompt = document.getElementById("searchnameprompt"); // Select 
 const searchnamesubmit = document.getElementById("searchnamesubmit"); // Select the search button
 const searchtagsubmit = document.getElementById("searchtagsubmit"); // Select the tag search button
 const singletagsubmit = document.getElementById("singletagsubmit"); // Select the single tag search button
+const otherwaysubmit = document.getElementById("otherwaysubmit"); // Select the otherway search button
 
 async function show_btn_login(){
   let response = await fetch(`${api}/currentuser`); // Fetch data from '/hotel' endpoint
@@ -183,14 +184,36 @@ function scrollto(element){
   document.getElementById(element).scrollIntoView()
 }
 
+async function show_game_select(){
+  let response = await fetch(`${api}/get_game_name_list`);
+  let game_name_list = await response.json();
+  let selectsection = document.getElementById("gameselectform")
+  let content = ""
+  console.log(game_name_list)
+  for (const name of game_name_list){
+    content += `<option value="${name}">${name}</option>`
+  };
+  selectsection.innerHTML = content
+}
+
+function logotherway() {
+  let selectBox = document.getElementById("gameselectform");
+  let game_name = selectBox.value;
+  console.log(game_name)
+
+  window.location.href = `otherway.html?game_name=${game_name}`;
+}
+
 show_btn_login();
 show_tag_checkbox();
 show_tag_select();
+show_game_select();
 showgames();
 
 searchnamesubmit.addEventListener("click", logname);
 searchtagsubmit.addEventListener("click", logtag);
 singletagsubmit.addEventListener("click", logsingletag);
+otherwaysubmit.addEventListener("click", logotherway)
 
 //// Template ///
 // const searchnameprompt = document.getElementById("searchnameprompt"); // Select the search bar input

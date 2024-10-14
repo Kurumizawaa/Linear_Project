@@ -81,3 +81,11 @@ async def searchtag(tag: str, playertype: str):
 @app.get('/besthistorymatch') # find best match from search history
 async def besthistorymatch():
     return main.searchuserhistory()
+
+@app.get('/get_game_name_list') # get game name list
+async def get_game_name_list():
+    return [game.name for game in gamedata.gamelst[:3000]]
+
+@app.get('/mca_best_match') # find best match from mca
+async def mca_best_match(game_name: str):
+    return main.mca_best_match(game_name)
