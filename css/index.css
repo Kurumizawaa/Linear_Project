@@ -102,18 +102,3 @@
         transform: translateY(-10px);
     }
 }
-
-#otherway {
-    background: linear-gradient(rgba(0, 0, 255, 0.5), rgba(0, 0, 255, 0.5));
-    font-family: 'VALORANT', sans-serif; 
-    font-size: 30px;
-    color: rgb(0, 0, 0);
-}
-
-.otherway-title .line
-{
-    width: 1000px;
-    height: 4px;
-    background-color: rgb(0, 0, 0);
-    margin: 10px auto 24px auto;
-}

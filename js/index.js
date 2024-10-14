@@ -102,6 +102,7 @@ async function showgames(){
                 <h2 class="card-title" style="font-size: 40px; font-family: 'd-din'; font-weight: bold;">${historydata[i]['name']}</h2>
                 <p class="card-text" style="font-size: 20px; font-family: 'd-din';">${historydata[i]['description']}</p>
                 <a href="${steamdata['steamlink']}" type="button" class="btn btn btn-outline-light me-2" style="font-size: 20px; font-family: 'd-din'; font-weight: bold;"><i class="bi bi-steam"></i>&nbsp;&nbsp;Steam</a>
+                <a href="/similargame.html?game_name=${historydata[i]['name']}" type="button" class="btn btn btn-outline-light me-2" style="font-size: 20px; font-family: 'd-din'; font-weight: bold;"><i class="bi bi-search"></i>&nbsp;&nbsp;Find Similar Game</a>
             </div>
             </div>
         </div>
@@ -196,14 +197,6 @@ async function show_game_select(){
   selectsection.innerHTML = content
 }
 
-function logotherway() {
-  let selectBox = document.getElementById("gameselectform");
-  let game_name = selectBox.value;
-  console.log(game_name)
-
-  window.location.href = `otherway.html?game_name=${game_name}`;
-}
-
 show_btn_login();
 show_tag_checkbox();
 show_tag_select();
@@ -213,7 +206,6 @@ showgames();
 searchnamesubmit.addEventListener("click", logname);
 searchtagsubmit.addEventListener("click", logtag);
 singletagsubmit.addEventListener("click", logsingletag);
-otherwaysubmit.addEventListener("click", logotherway)
 
 //// Template ///
 // const searchnameprompt = document.getElementById("searchnameprompt"); // Select the search bar input

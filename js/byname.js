@@ -47,6 +47,7 @@ async function showgames(){
                 <h2 class="card-title" style="font-size: 40px; font-family: 'd-din'; font-weight: bold;">${gamedata[i]['name']}</h2>
                 <p class="card-text" style="font-family: 'd-din';">${gamedata[i]['description']}</p>
                 <a href="${steamdata['steamlink']}" type="button" class="btn btn btn-outline-light me-2" style="font-family: 'd-din'; font-weight: bold;"><i class="bi bi-steam"></i>&nbsp;&nbsp;Steam</a>
+                <a href="/similargame.html?game_name=${gamedata[i]['name']}" type="button" class="btn btn btn-outline-light me-2" style="font-family: 'd-din'; font-weight: bold;"><i class="bi bi-search"></i>&nbsp;&nbsp;Find Similar Game</a>
             </div>
             </div>
         </div>

@@ -247,10 +247,12 @@ def cosine_similarity(v1,v2):
 # plt.show()
 
 def mca_best_match(game_name):
-    game = [game for game in gamedata.gamelst if game.name.upper() == game_name.upper()]
+    game = next((game for game in gamedata.gamelst if game.name.upper() == game_name.upper()), None)
+    if currentuser:
+        currentuser.addhistory(game.tags)
     if game == []:
         return None
-    index = gamedata.gamelst.index(game[0])
+    index = gamedata.gamelst.index(game)
     game_coords = gamedata.mca_result.loc[index].values
 
     distances = {}
