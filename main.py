@@ -247,11 +247,11 @@ def cosine_similarity(v1,v2):
 # plt.show()
 
 def mca_best_match(game_name):
-    game = next((game for game in gamedata.gamelst if game.name.upper() == game_name.upper()), None)
+    game = next((game for game in gamedata.mca_result if game.upper() == game_name.upper()), None)
+    if not game:
+        return []
     if currentuser:
         currentuser.addhistory(game.tags)
-    if game == []:
-        return None
     index = gamedata.gamelst.index(game)
     game_coords = gamedata.mca_result.loc[index].values
 
@@ -262,5 +262,3 @@ def mca_best_match(game_name):
 
     sorted_distances = sorted(distances.items(), key=lambda x: x[1])
     return [gamedata.gamelst[index] for index, distance in sorted_distances[:20]]
-
-print(covariance(mca_best_match("elden ring")))

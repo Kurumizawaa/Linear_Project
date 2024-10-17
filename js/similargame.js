@@ -31,28 +31,64 @@ async function showgames(){
     console.log(gamedata)
     let gamelist = document.getElementById("gamecard")
     let content = ""
-    for (let i = 0; i < gamedata.length; i++){
-        console.log(gamedata[i])
-        let steamresponse = await fetch(`${api}/getsteam?gamename=${gamedata[i]['name']}`);
-        let steamdata = await steamresponse.json();
-        console.log(steamdata['steamlink'])
-        content += `
-        <div class="card mb-3" style="background-color: rgba(111, 111, 111, 0.25); border-color: aliceblue; border-width: 5px;">
-        <div class="row g-0">
-            <div class="col-md-4">
-            <img src="${steamdata['imgsrc']}" class="img-fluid rounded-5 p-2" alt="">
+    if(gamedata.length == 0){
+        console.log('name: ', searchname)
+        let response = await fetch(`${api}/searchbyname?name=${searchname}`);
+        let gamedata = await response.json();
+        let topgametags = gamedata[0]["tags"];
+        let toptags = Array.from(Object.values(topgametags)).join('');
+        let tagresponse = await fetch(`${api}/seachbestmatch?tags=${toptags}&playertype=mixed`);
+        let tagdata = await tagresponse.json();
+        let gamelist = document.getElementById("gamecard")
+        let content = ""
+        for (let i = 0; i < tagdata.length; i++){
+            console.log(tagdata[i])
+            let steamresponse = await fetch(`${api}/getsteam?gamename=${tagdata[i]['name']}`);
+            let steamdata = await steamresponse.json();
+            console.log(steamdata['steamlink'])
+            content += `
+            <div class="card mb-3" style="background-color: rgba(111, 111, 111, 0.25); border-color: aliceblue; border-width: 5px;">
+            <div class="row g-0">
+                <div class="col-md-4">
+                <img src="${steamdata['imgsrc']}" class="img-fluid rounded-5 p-2" alt="">
+                </div>
+                <div class="col-md-8">
+                <div class="card-body" style="color: aliceblue;">
+                    <h2 class="card-title" style="font-size: 40px; font-family: 'd-din'; font-weight: bold;">${tagdata[i]['name']}</h2>
+                    <p class="card-text" style="font-family: 'd-din';">${tagdata[i]['description']}</p>
+                    <a href="${steamdata['steamlink']}" type="button" class="btn btn btn-outline-light me-2" style="font-family: 'd-din'; font-weight: bold;"><i class="bi bi-steam"></i>&nbsp;&nbsp;Steam</a>
+                    <a href="/similargame.html?game_name=${tagdata[i]['name']}" type="button" class="btn btn btn-outline-light me-2" style="font-family: 'd-din'; font-weight: bold;"><i class="bi bi-search"></i>&nbsp;&nbsp;Find Similar Game</a>
+                </div>
+                </div>
             </div>
-            <div class="col-md-8">
-            <div class="card-body" style="color: aliceblue;">
-                <h2 class="card-title" style="font-size: 40px; font-family: 'd-din'; font-weight: bold;">${gamedata[i]['name']}</h2>
-                <p class="card-text" style="font-family: 'd-din';">${gamedata[i]['description']}</p>
-                <a href="${steamdata['steamlink']}" type="button" class="btn btn btn-outline-light me-2" style="font-family: 'd-din'; font-weight: bold;"><i class="bi bi-steam"></i>&nbsp;&nbsp;Steam</a>
-                <a href="/similargame.html?game_name=${gamedata[i]['name']}" type="button" class="btn btn btn-outline-light me-2" style="font-family: 'd-din'; font-weight: bold;"><i class="bi bi-search"></i>&nbsp;&nbsp;Find Similar Game</a>
+            </div>`
+            gamelist.innerHTML = content
+        }
+    }
+    else{
+        for (let i = 0; i < gamedata.length; i++){
+            console.log(gamedata[i])
+            let steamresponse = await fetch(`${api}/getsteam?gamename=${gamedata[i]['name']}`);
+            let steamdata = await steamresponse.json();
+            console.log(steamdata['steamlink'])
+            content += `
+            <div class="card mb-3" style="background-color: rgba(111, 111, 111, 0.25); border-color: aliceblue; border-width: 5px;">
+            <div class="row g-0">
+                <div class="col-md-4">
+                <img src="${steamdata['imgsrc']}" class="img-fluid rounded-5 p-2" alt="">
+                </div>
+                <div class="col-md-8">
+                <div class="card-body" style="color: aliceblue;">
+                    <h2 class="card-title" style="font-size: 40px; font-family: 'd-din'; font-weight: bold;">${gamedata[i]['name']}</h2>
+                    <p class="card-text" style="font-family: 'd-din';">${gamedata[i]['description']}</p>
+                    <a href="${steamdata['steamlink']}" type="button" class="btn btn btn-outline-light me-2" style="font-family: 'd-din'; font-weight: bold;"><i class="bi bi-steam"></i>&nbsp;&nbsp;Steam</a>
+                    <a href="/similargame.html?game_name=${gamedata[i]['name']}" type="button" class="btn btn btn-outline-light me-2" style="font-family: 'd-din'; font-weight: bold;"><i class="bi bi-search"></i>&nbsp;&nbsp;Find Similar Game</a>
+                </div>
+                </div>
             </div>
-            </div>
-        </div>
-        </div>`
-        gamelist.innerHTML = content
+            </div>`
+            gamelist.innerHTML = content
+        }
     }
 }
 
